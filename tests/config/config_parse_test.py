@@ -1270,7 +1270,7 @@ class TestValidateIdentityFile(TestCase):
 
     def test_valid_identity_files_valid(self):
         filename = self.private_file.name
-        fh_private = open(filename + '.pub', 'w')
+        fh_private = open(f'{filename}.pub', 'w')
         try:
             config = config_parse.valid_identity_file(filename, self.context)
         finally:
@@ -1373,19 +1373,21 @@ class TestValidateVolume(TestCase):
         )
 
     def test_mesos_default_volumes(self):
-        mesos_options = {'master_address': 'mesos_master'}
-        mesos_options['default_volumes'] = [
-            {
-                'container_path': '/nail/srv',
-                'host_path': '/tmp',
-                'mode': 'RO',
-            },
-            {
-                'container_path': '/nail/srv',
-                'host_path': '/tmp',
-                'mode': 'invalid',
-            },
-        ]
+        mesos_options = {
+            'master_address': 'mesos_master',
+            'default_volumes': [
+                {
+                    'container_path': '/nail/srv',
+                    'host_path': '/tmp',
+                    'mode': 'RO',
+                },
+                {
+                    'container_path': '/nail/srv',
+                    'host_path': '/tmp',
+                    'mode': 'invalid',
+                },
+            ],
+        }
 
         with pytest.raises(ConfigError):
             config_parse.valid_mesos_options.validate(mesos_options, self.context)

@@ -225,9 +225,7 @@ class TestOutputStreamSerializer(TestCase):
         self.serial = OutputStreamSerializer([self.test_dir])
         self.filename = "STARS"
         self.content = "123\n456\n789"
-        self.expected = [
-            line for line in self.content.split('\n')
-        ]
+        self.expected = list(self.content.split('\n'))
 
     @teardown
     def teardown_test_dir(self):

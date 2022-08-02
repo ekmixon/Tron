@@ -62,9 +62,11 @@ def filter_jobs_actions_runs(prefix, inputs):
         # If what a user typed is exactly what is already in a suggestion, then we need to give them
         # Even more suggestions (+1)
         return [
-            i for i in inputs if i.startswith(prefix) and
-            (i.count('.') == dots or i.count('.') == dots + 1)
+            i
+            for i in inputs
+            if i.startswith(prefix) and i.count('.') in [dots, dots + 1]
         ]
+
     else:
         # Otherwise we only want to scope our suggestions to those that are on the same "level"
         # which in string form means they have the same number of dots
@@ -101,8 +103,9 @@ def build_option_parser(usage=None, epilog=None):
     parser.add_argument(
         '--version',
         action='version',
-        version="%s %s" % (parser.prog, tron.__version__),
+        version=f"{parser.prog} {tron.__version__}",
     )
+
 
     parser.add_argument(
         "-v",
@@ -137,11 +140,10 @@ def get_client_config():
     for config_file in config_file_list:
         filename = os.path.expanduser(config_file)
         if os.access(filename, os.R_OK):
-            config = read_config(filename)
-            if config:
+            if config := read_config(filename):
                 return config
 
-    log.debug("Could not find a config in: %s." % ', '.join(config_file_list))
+    log.debug(f"Could not find a config in: {', '.join(config_file_list)}.")
     return {}
 
 
@@ -173,7 +175,7 @@ def read_config(filename=CONFIG_FILE_NAME):
         with opener(filename, 'r') as config_file:
             return yaml.load(config_file)
     except (IOError, OSError):
-        log.info("Failed to read config file: %s" % CONFIG_FILE_NAME)
+        log.info(f"Failed to read config file: {CONFIG_FILE_NAME}")
     return {}
 
 

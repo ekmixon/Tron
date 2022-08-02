@@ -26,7 +26,7 @@ class MockChecker(ast.NodeVisitor):
                     print("SyntaxError on file %s:%d" % (filename, error.lineno))
                     return
         except IOError:
-            print("Error opening filename: %s" % filename)
+            print(f"Error opening filename: {filename}")
             return
         self.init_module_imports()
         self.visit(file_ast)
@@ -44,20 +44,25 @@ class MockChecker(ast.NodeVisitor):
             return False
 
     def visit_Import(self, node):
-        if [name for name in node.names if 'mock' == name.name]:
+        if [name for name in node.names if name.name == 'mock']:
             self.imported_mock = True
 
     def visit_ImportFrom(self, node):
-        if node.module == 'mock' and (name for name in node.names if 'patch' == name.name):
+        if node.module == 'mock' and (
+            name for name in node.names if name.name == 'patch'
+        ):
             self.imported_patch = True
 
     def visit_Call(self, node):
         try:
-            if (self.imported_patch and self._call_uses_patch(node)) or \
-                    (self.imported_mock and self._call_uses_mock_patch(node)):
-                if not any([keyword for keyword in node.keywords if keyword.arg == 'autospec']):
-                    print("%s:%d: Found a mock without an autospec!" % (self.current_filename, node.lineno))
-                    self.errors += 1
+            if (
+                (self.imported_patch and self._call_uses_patch(node))
+                or (self.imported_mock and self._call_uses_mock_patch(node))
+            ) and not any(
+                keyword for keyword in node.keywords if keyword.arg == 'autospec'
+            ):
+                print("%s:%d: Found a mock without an autospec!" % (self.current_filename, node.lineno))
+                self.errors += 1
         except AttributeError:
             pass
         self.generic_visit(node)

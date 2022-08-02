@@ -73,7 +73,7 @@ def wait_for_http(service):
     while True:
         print(f'Waiting for {service} to be up...')
         try:
-            response = requests.get('http://%s/' % service, timeout=5)
+            response = requests.get(f'http://{service}/', timeout=5)
         except (
             requests.exceptions.ConnectionError,
             requests.exceptions.Timeout,

@@ -11,22 +11,16 @@ log = logging.getLogger(__name__)
 
 
 def maybe_decode(maybe_string):
-    if type(maybe_string) is bytes:
-        return maybe_string.decode()
-    return maybe_string
+    return maybe_string.decode() if type(maybe_string) is bytes else maybe_string
 
 
 def maybe_encode(maybe_bytes):
-    if type(maybe_bytes) is not bytes:
-        return maybe_bytes.encode()
-    return maybe_bytes
+    return maybe_bytes.encode() if type(maybe_bytes) is not bytes else maybe_bytes
 
 
 def next_or_none(iterable):
-    try:
+    with contextlib.suppress(StopIteration):
         return next(iterable)
-    except StopIteration:
-        pass
 
 
 @contextlib.contextmanager
@@ -62,9 +56,10 @@ def chdir(path):
 
 @contextlib.contextmanager
 def signals(signal_map):
-    orig_map = {}
-    for signum, handler in signal_map.items():
-        orig_map[signum] = signal.signal(signum, handler)
+    orig_map = {
+        signum: signal.signal(signum, handler)
+        for signum, handler in signal_map.items()
+    }
 
     try:
         yield

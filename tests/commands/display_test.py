@@ -68,8 +68,7 @@ class TestDisplayJobs(TestCase):
 
     def do_format(self):
         out = DisplayJobs().format(self.data)
-        lines = out.split('\n')
-        return lines
+        return out.split('\n')
 
     def test_format(self):
         lines = self.do_format()

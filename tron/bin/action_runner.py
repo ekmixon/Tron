@@ -64,13 +64,13 @@ class StatusFile(object):
 def validate_output_dir(path):
     if os.path.isdir(path):
         if not os.access(path, os.W_OK):
-            raise OSError("Output dir %s not writable" % path)
+            raise OSError(f"Output dir {path} not writable")
         return
     else:
         try:
             os.makedirs(path)
         except OSError:
-            raise OSError("Could not create output dir %s" % path)
+            raise OSError(f"Could not create output dir {path}")
 
 
 def build_environment(run_id, original_env=None):

@@ -13,10 +13,7 @@ def get_integer(request, key):
     value is an integer. Otherwise returns None.
     """
     value = get_string(request, key)
-    if value is None or not value.isdigit():
-        return None
-
-    return int(value)
+    return None if value is None or not value.isdigit() else int(value)
 
 
 def get_string(request, key):
@@ -40,10 +37,7 @@ def get_string(request, key):
 def get_bool(request, key, default=None):
     """Returns True if the key exists and is truthy in the request args."""
     int_value = get_integer(request, key)
-    if int_value is None:
-        return default
-
-    return bool(int_value)
+    return default if int_value is None else bool(int_value)
 
 
 def get_datetime(request, key):

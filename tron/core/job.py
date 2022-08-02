@@ -178,7 +178,7 @@ class Job(Observable, Observer):
         if self.runs.get_run_by_state(ActionRun.SCHEDULED):
             return self.STATUS_ENABLED
 
-        log.warning("%s in an unknown state: %s" % (self, self.runs))
+        log.warning(f"{self} in an unknown state: {self.runs}")
         return self.STATUS_UNKNOWN
 
     def get_name(self):
@@ -207,14 +207,13 @@ class Job(Observable, Observer):
     def get_job_runs_from_state(self, state_data):
         """Apply a previous state to this Job."""
         self.enabled = state_data['enabled']
-        job_runs = jobrun.job_runs_from_state(
+        return jobrun.job_runs_from_state(
             state_data['runs'],
             self.action_graph,
             self.output_path.clone(),
             self.context,
             self.node_pool,
         )
-        return job_runs
 
     def build_new_runs(self, run_time, manual=False):
         """Uses its JobCollection to build new JobRuns. If all_nodes is set,
@@ -254,4 +253,4 @@ class Job(Observable, Observer):
         return not self == other
 
     def __str__(self):
-        return "Job:%s" % self.name
+        return f"Job:{self.name}"

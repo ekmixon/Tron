@@ -17,7 +17,7 @@ def from_string(content):
     try:
         return yaml.safe_load(content)
     except yaml.yaml.error.YAMLError as e:
-        raise ConfigError("Invalid config format: %s" % str(e))
+        raise ConfigError(f"Invalid config format: {str(e)}")
 
 
 def write(path, content):
@@ -54,8 +54,7 @@ class ManifestFile(object):
 
     def create(self):
         if os.path.isfile(self.filename):
-            msg = "Refusing to create manifest. File %s exists."
-            log.info(msg % self.filename)
+            log.info(f"Refusing to create manifest. File {self.filename} exists.")
             return
 
         write(self.filename, {})
@@ -68,8 +67,7 @@ class ManifestFile(object):
     def delete(self, name):
         manifest = read(self.filename)
         if name not in manifest:
-            msg = "Namespace %s does not exist in manifest, cannot delete."
-            log.info(msg % name)
+            log.info(f"Namespace {name} does not exist in manifest, cannot delete.")
             return
 
         del manifest[name]
@@ -96,7 +94,7 @@ class ConfigManager(object):
 
     def build_file_path(self, name):
         name = name.replace('.', '_').replace(os.path.sep, '_')
-        return os.path.join(self.config_path, '%s.yaml' % name)
+        return os.path.join(self.config_path, f'{name}.yaml')
 
     def read_raw_config(self, name=schema.MASTER_NAMESPACE):
         """Read the config file without converting to yaml."""
@@ -116,8 +114,7 @@ class ConfigManager(object):
     def delete_config(self, name):
         filename = self.manifest.get_file_name(name)
         if not filename:
-            msg = "Namespace %s does not exist in manifest, cannot delete."
-            log.info(msg % name)
+            log.info(f"Namespace {name} does not exist in manifest, cannot delete.")
             return
 
         self.manifest.delete(name)
@@ -153,7 +150,7 @@ class ConfigManager(object):
 
     def load(self):
         """Return the fully constructed configuration."""
-        log.info("Loading full config from %s" % self.config_path)
+        log.info(f"Loading full config from {self.config_path}")
         name_mapping = self.get_config_name_mapping()
         return config_parse.ConfigContainer.create(name_mapping)
 

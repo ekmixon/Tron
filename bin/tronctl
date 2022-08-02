@@ -49,8 +49,7 @@ def command_help_epilog():
     for cmd_name, desc in COMMAND_HELP:
         result.append('  ')
         text = ''.join((cmd_name.ljust(15), desc.ljust(40)))
-        result.append(text)
-        result.append('\n')
+        result.extend((text, '\n'))
     return ''.join(result)
 
 
@@ -99,9 +98,7 @@ def parse_cli():
     ).completer = cmd_utils.tron_jobs_completer
 
     argcomplete.autocomplete(parser)
-    args = parser.parse_args()
-
-    return args
+    return parser.parse_args()
 
 
 def request(url, data, headers=None, method=None):
@@ -180,7 +177,7 @@ def backfill(args):
         yield False
 
     if args.end_date is None:
-        args.end_date = datetime.datetime.today()
+        args.end_date = datetime.datetime.now()
 
     if not args.id:
         print("Error: must provide at least one id argument")
@@ -200,11 +197,11 @@ def backfill(args):
 
 
 def get_dates_for_backfill(start_date, end_date):
-    dates = []
     delta = end_date - start_date
-    for i in range(delta.days + 1):
-        dates.append((start_date + datetime.timedelta(i)).date().isoformat())
-    return dates
+    return [
+        (start_date + datetime.timedelta(i)).date().isoformat()
+        for i in range(delta.days + 1)
+    ]
 
 
 def tron_version(args):

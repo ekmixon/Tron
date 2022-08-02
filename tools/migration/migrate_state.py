@@ -78,7 +78,7 @@ def get_current_config(config_path):
 
 def add_namespaces(state_data):
     return {
-        '%s.%s' % (schema.MASTER_NAMESPACE, name): data
+        f'{schema.MASTER_NAMESPACE}.{name}': data
         for (name, data) in state_data.items()
     }
 
@@ -116,7 +116,7 @@ def convert_state(opts):
 
     for name, job in job_states.items():
         dest_manager.save(runstate.JOB_STATE, name, job)
-    print("Migrated %s jobs." % len(job_states))
+    print(f"Migrated {len(job_states)} jobs.")
 
     dest_manager.cleanup()
 

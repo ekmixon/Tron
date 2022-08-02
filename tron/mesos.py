@@ -41,9 +41,9 @@ def get_clusterman_metrics():
 
 
 def get_mesos_leader(master_address, mesos_master_port):
-    url = "%s:%s/redirect" % (master_address, mesos_master_port)
+    url = f"{master_address}:{mesos_master_port}/redirect"
     response = requests.get(url)
-    return '{}:{}'.format(urlparse(response.url).hostname, mesos_master_port)
+    return f'{urlparse(response.url).hostname}:{mesos_master_port}'
 
 
 def combine_volumes(defaults, overrides):
@@ -170,14 +170,11 @@ class MesosTask(ActionCommand):
         config_str = re.sub("'AWS_SECRET_ACCESS_KEY': '[a-zA-Z0-9+/=]+'", 'AWS_SECRET_ACCESS_KEY_REDACTED', config_str)
         config_str = re.sub("'AWS_ACCESS_KEY_ID': '[a-zA-Z0-9]+'", 'AWS_ACCESS_KEY_ID_REDACTED', config_str)
         self.log.info(
-            'Mesos task {} created with config {}'.format(
-                self.get_mesos_id(),
-                config_str,
-            ),
+            f'Mesos task {self.get_mesos_id()} created with config {config_str}'
         )
 
     def get_event_logger(self):
-        log = logging.getLogger(__name__ + '.' + self.id)
+        log = logging.getLogger(f'{__name__}.{self.id}')
         # Every time a task gets created, this function runs and will add
         # more stderr handlers to the logger, which results in duplicate log
         # output. We only want to add the stderr handler if the logger does not
@@ -190,13 +187,9 @@ class MesosTask(ActionCommand):
 
     def setup_output_logging(self):
         task_id = self.get_mesos_id()
-        stdout_logger = logging.getLogger(
-            '{}.{}.{}'.format(TASK_OUTPUT_LOGGER, task_id, 'stdout'),
-        )
+        stdout_logger = logging.getLogger(f'{TASK_OUTPUT_LOGGER}.{task_id}.stdout')
         stdout_logger.addHandler(logging.StreamHandler(self.stdout))
-        stderr_logger = logging.getLogger(
-            '{}.{}.{}'.format(TASK_OUTPUT_LOGGER, task_id, 'stderr'),
-        )
+        stderr_logger = logging.getLogger(f'{TASK_OUTPUT_LOGGER}.{task_id}.stderr')
         stderr_logger.addHandler(logging.StreamHandler(self.stderr))
 
     def get_mesos_id(self):
@@ -249,9 +242,7 @@ class MesosTask(ActionCommand):
     def handle_event(self, event):
         event_id = getattr(event, 'task_id', None)
         if event_id != self.get_mesos_id():
-            self.log.warning(
-                'Event task id {} does not match, ignoring'.format(event_id),
-            )
+            self.log.warning(f'Event task id {event_id} does not match, ignoring')
             return
         mesos_type = getattr(event, 'platform_type', None)
 
@@ -264,7 +255,7 @@ class MesosTask(ActionCommand):
         try:
             self.log_event_info(event)
         except Exception as e:
-            self.log.warning('Exception while logging event: {}'.format(e))
+            self.log.warning(f'Exception while logging event: {e}')
 
         if mesos_type == 'staging':
             pass
@@ -286,21 +277,15 @@ class MesosTask(ActionCommand):
             self.exited(None)
         elif mesos_type in self.ERROR_STATES:
             self.exited(1)
-        elif mesos_type is None:
-            pass
-        else:
-            self.log.info(
-                'Did not handle unknown mesos event type: {}'.format(event),
-            )
+        elif mesos_type is not None:
+            self.log.info(f'Did not handle unknown mesos event type: {event}')
 
         if event.terminal:
             self.log.info('This Mesos event was terminal, ending this action')
             self.report_resources(decrement=True)
 
             exit_code = int(not getattr(event, 'success', False))
-            # Returns False if we've already exited normally above
-            unexpected_error = self.exited(exit_code)
-            if unexpected_error:
+            if unexpected_error := self.exited(exit_code):
                 self.log.error('Unexpected failure, exiting')
 
             self.done()
@@ -415,12 +400,7 @@ class MesosCluster:
                 for metric_key, metric_value in clusterman_resources.items():
                     writer.send((metric_key, int(time.time()), metric_value))
         self.runner.run(task.get_config())
-        log.info(
-            'Submitting task {} to {}'.format(
-                mesos_task_id,
-                self.mesos_address,
-            ),
-        )
+        log.info(f'Submitting task {mesos_task_id} to {self.mesos_address}')
         task.report_resources()
 
     def recover(self, task):
@@ -540,37 +520,30 @@ class MesosCluster:
             message = getattr(event, 'message', None)
             if message == 'stop':
                 # Framework has been removed, stop it.
-                log.warning('Framework has been stopped: {}'.format(event.raw))
+                log.warning(f'Framework has been stopped: {event.raw}')
                 self.stop()
                 MesosClusterRepository.remove(self.mesos_address)
             elif message == 'unknown':
-                log.warning(
-                    'Unknown error from Mesos master: {}'.format(event.raw)
-                )
+                log.warning(f'Unknown error from Mesos master: {event.raw}')
             elif message == 'registered':
                 framework_id = event.raw['framework_id']['value']
                 MesosClusterRepository.save(self.mesos_address, framework_id)
             else:
-                log.warning('Unknown type of control event: {}'.format(event))
+                log.warning(f'Unknown type of control event: {event}')
 
         elif event.kind == 'task':
             if not hasattr(event, 'task_id'):
-                log.warning('Task event missing task_id: {}'.format(event))
+                log.warning(f'Task event missing task_id: {event}')
                 return
             if event.task_id not in self.tasks:
-                log.warning(
-                    'Received event for unknown task {}: {}'.format(
-                        event.task_id,
-                        event,
-                    ),
-                )
+                log.warning(f'Received event for unknown task {event.task_id}: {event}')
                 return
             task = self.tasks[event.task_id]
             task.handle_event(event)
             if task.is_done:
                 del self.tasks[event.task_id]
         else:
-            log.warning('Unknown type of event: {}'.format(event))
+            log.warning(f'Unknown type of event: {event}')
 
     def stop(self, fail_tasks=False):
         self.framework_id = None

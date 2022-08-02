@@ -83,10 +83,7 @@ class TestBuildEnumValidator(TestCase):
             'c',
             self.context,
         )
-        assert_in(
-            'Value at  is not in %s: ' % str(set(self.enum)),
-            str(exception),
-        )
+        assert_in(f'Value at  is not in {set(self.enum)}: ', str(exception))
 
 
 class TestValidTime(TestCase):
@@ -174,7 +171,7 @@ class TestConfigContext(TestCase):
         )
 
         child = parent_context.build_child_context('child')
-        assert_equal(child.path, '%s.child' % path)
+        assert_equal(child.path, f'{path}.child')
         assert_equal(child.nodes, nodes)
         assert_equal(child.namespace, namespace)
         assert_equal(child.command_context, command_context)

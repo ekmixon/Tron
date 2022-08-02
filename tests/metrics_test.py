@@ -6,7 +6,7 @@ import tron.metrics as metrics
 
 @pytest.fixture(autouse=True)
 def all_metrics():
-    with mock.patch.object(metrics, 'all_metrics', new=dict()) as mock_all:
+    with mock.patch.object(metrics, 'all_metrics', new={}) as mock_all:
         yield mock_all
 
 
@@ -140,5 +140,5 @@ def test_view_all_metrics():
     assert result['gauge'][0]['name'] == 'd'
 
     assert len(result['histogram']) == 2
-    names = set(metric['name'] for metric in result['histogram'])
-    assert names == set(['e', 'f'])
+    names = {metric['name'] for metric in result['histogram']}
+    assert names == {'e', 'f'}

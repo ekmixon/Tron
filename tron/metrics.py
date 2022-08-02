@@ -90,6 +90,6 @@ def view_all_metrics():
     for (metric_type, name, dims), metric in all_metrics.items():
         data = {'name': name, **metrics_to_viewers[metric_type](metric)}
         if dims:
-            data.update({'dimensions': dict(dims)})
+            data['dimensions'] = dict(dims)
         all_data[metric_type].append(data)
     return all_data

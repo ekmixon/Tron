@@ -104,11 +104,11 @@ def assert_not_reached():
 
 
 def assert_empty(iterable):
-    assert len(list(iterable)) == 0
+    assert not list(iterable)
 
 
 def assert_not_empty(iterable):
-    assert len(list(iterable)) > 0
+    assert list(iterable)
 
 
 def assert_length(sequence, expected):

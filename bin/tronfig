@@ -208,8 +208,7 @@ if __name__ == '__main__':
     else:
         namespace, content = get_config_input(args.namespace, args.source)
         config_hash = client.config(namespace)['hash']
-        result = validate(namespace, content)
-        if result:
+        if result := validate(namespace, content):
             print(result)
             sys.exit(1)
 

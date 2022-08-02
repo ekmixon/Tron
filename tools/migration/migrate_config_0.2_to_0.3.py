@@ -40,25 +40,25 @@ def name_from_doc(doc):
         return doc['hostname']
 
     if set(doc.keys()) == {'nodes'}:
-        raise ValueError("Please create a name for NodePool %s" % doc)
+        raise ValueError(f"Please create a name for NodePool {doc}")
 
-    raise ValueError("Could not find a name for %s" % doc)
+    raise ValueError(f"Could not find a name for {doc}")
 
 
 def warn_node_pools(content):
     doc = yaml.safe_load(content)
 
-    node_pools = [node_doc for node_doc in doc['nodes'] if 'nodes' in node_doc]
-
-    if not node_pools:
+    if node_pools := [
+        node_doc for node_doc in doc['nodes'] if 'nodes' in node_doc
+    ]:
+        print(
+            "\n\nNode Pools should be moved into a node_pools section." +
+            " The following node pools were found:\n" +
+            "\n".join(str(n) for n in node_pools),
+            file=sys.stderr,
+        )
+    else:
         return
-
-    print(
-        "\n\nNode Pools should be moved into a node_pools section." +
-        " The following node pools were found:\n" +
-        "\n".join(str(n) for n in node_pools),
-        file=sys.stderr,
-    )
 
 
 def warn_requires_list(content):
@@ -73,7 +73,7 @@ def warn_requires_list(content):
             if isinstance(action['requires'], list):
                 continue
 
-            action_names.append("%s.%s" % (job['name'], action['name']))
+            action_names.append(f"{job['name']}.{action['name']}")
 
     if not action_names:
         return

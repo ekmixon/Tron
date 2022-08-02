@@ -479,7 +479,7 @@ class TestActionRun:
         assert self.action_run._exit_unsuccessful(-1)
         assert len(self.action_run.attempts) == 2
 
-        for i, attempt in enumerate(self.action_run.attempts):
+        for attempt in self.action_run.attempts:
             assert attempt.rendered_command == self.rendered_command
 
     def test_no_auto_retry_on_fail_not_running(self):
@@ -566,7 +566,7 @@ class TestActionRun:
 
 class TestActionRunFactoryTriggerTimeout:
     def test_trigger_timeout_default(self):
-        today = datetime.datetime.today()
+        today = datetime.datetime.now()
         day = datetime.timedelta(days=1)
         tomorrow = today + day
         action_run = ActionRunFactory.build_run_for_action(
@@ -577,7 +577,7 @@ class TestActionRunFactoryTriggerTimeout:
         assert action_run.trigger_timeout_timestamp == tomorrow.timestamp()
 
     def test_trigger_timeout_custom(self):
-        today = datetime.datetime.today()
+        today = datetime.datetime.now()
         hour = datetime.timedelta(hours=1)
         target = today + hour
         action_run = ActionRunFactory.build_run_for_action(
@@ -1272,7 +1272,7 @@ class TestActionRunCollection:
     def test_get_startable_action_runs_none(self):
         self.collection.run_map.clear()
         action_runs = self.collection.get_startable_action_runs()
-        assert set(action_runs) == set()
+        assert not set(action_runs)
 
     def test_has_startable_action_runs(self):
         assert self.collection.has_startable_action_runs

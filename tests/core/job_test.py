@@ -32,15 +32,14 @@ def mock_job(mock_node_repo):
     scheduler = mock.Mock()
     run_collection = MagicMock()
     nodes = mock.create_autospec(node.NodePool)
-    mock_job = job.Job(
+    yield job.Job(
         "jobname",
         scheduler,
         run_collection=run_collection,
         action_graph=action_graph,
         node_pool=nodes,
-        action_runner=actioncommand.NoActionRunnerFactory
+        action_runner=actioncommand.NoActionRunnerFactory,
     )
-    yield mock_job
 
 
 class TestJob:
@@ -147,8 +146,10 @@ class TestJob:
                 end_time="sometime",
                 cleanup_run=None,
                 runs=[],
-            ) for i in range(0, 3)
+            )
+            for i in range(3)
         ]
+
         state_data = {'enabled': False, 'runs': job_runs}
         self.job.get_job_runs_from_state(state_data)
         assert not self.job.enabled
@@ -220,7 +221,7 @@ class TestJob:
 
     def test__eq__(self):
         other_job = job.Job("jobname", 'scheduler', run_collection=MagicMock())
-        assert not self.job == other_job
+        assert self.job != other_job
         other_job.update_from_job(self.job)
         assert_equal(self.job, other_job)
 
@@ -228,7 +229,7 @@ class TestJob:
         other_job = job.Job("jobname", 'scheduler', run_collection=MagicMock())
         assert self.job != other_job
         other_job.update_from_job(self.job)
-        assert not self.job != other_job
+        assert self.job == other_job
 
     def test__eq__true(self):
         action_runner = mock.Mock()
@@ -292,9 +293,9 @@ class TestJobScheduler:
         self.job.get_job_runs_from_state.return_value = mock_runs
 
         with mock.patch(
-            'tron.core.job_scheduler.recovery.launch_recovery_actionruns_for_job_runs',
-            autospec=True,
-        ) as mock_launch_recovery:
+                'tron.core.job_scheduler.recovery.launch_recovery_actionruns_for_job_runs',
+                autospec=True,
+            ) as mock_launch_recovery:
             mock_launch_recovery.return_value = mock.Mock(autospec=True)
             self.job_scheduler.restore_state(
                 job_state_data, mock_action_runner
@@ -303,7 +304,7 @@ class TestJobScheduler:
             mock_launch_recovery.assert_called_once_with(
                 job_runs=mock_runs, master_action_runner=mock_action_runner
             )
-            calls = [mock.call(mock_runs[i]) for i in range(0, len(mock_runs))]
+            calls = [mock.call(mock_runs[i]) for i in range(len(mock_runs))]
             self.job.watch.assert_has_calls(calls)
 
     def test_create_and_schedule_runs_specific_time(self):

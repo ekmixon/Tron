@@ -1,6 +1,7 @@
 """
 Test cases for the web services interface to tron
 """
+
 from unittest.mock import MagicMock
 
 import mock
@@ -34,7 +35,7 @@ with mock.patch(
         from tron.api import resource as www
 
 REQUEST = twisted.web.server.Request(mock.Mock(), None)
-REQUEST.childLink = lambda val: "/jobs/%s" % val
+REQUEST.childLink = lambda val: f"/jobs/{val}"
 
 
 def build_request(**kwargs):

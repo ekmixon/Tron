@@ -63,9 +63,7 @@ def build_http_error_response(exc):
             content = simplejson.loads(content)
             content = content['error']
         except ValueError:
-            log.warning(
-                "Incorrectly formatted error response: {}".format(content),
-            )
+            log.warning(f"Incorrectly formatted error response: {content}")
     return Response(exc.code, exc.msg, content)
 
 
@@ -75,10 +73,10 @@ def request(uri, data=None, headers=None, method=None):
     try:
         response = urllib.request.urlopen(request)
     except urllib.error.HTTPError as e:
-        log.error("Received error response: %s" % e)
+        log.error(f"Received error response: {e}")
         return build_http_error_response(e)
     except urllib.error.URLError as e:
-        log.error("Received error response: %s" % e)
+        log.error(f"Received error response: {e}")
         return Response(URL_ERROR, e.reason, None)
 
     return load_response_content(response)
@@ -190,7 +188,7 @@ class Client(object):
 
 
 def build_api_url(resource, identifier_parts):
-    return '/api/%s/%s' % (resource, '/'.join(identifier_parts))
+    return f"/api/{resource}/{'/'.join(identifier_parts)}"
 
 
 def split_identifier(identifier):
@@ -257,4 +255,4 @@ def get_object_type_from_identifier(url_index, identifier):
     if id_obj:
         return id_obj
 
-    raise ValueError("Unknown job identifier: %s" % identifier)
+    raise ValueError(f"Unknown job identifier: {identifier}")

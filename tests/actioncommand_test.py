@@ -178,8 +178,8 @@ class TestSubprocessActionRunnerFactory(TestCase):
         assert_equal(
             shlex.split(actual),
             [
-                "%s/%s" % (self.exec_path, exec_name),
-                "%s/%s" % (self.status_path, id),
+                f"{self.exec_path}/{exec_name}",
+                f"{self.status_path}/{id}",
                 command,
                 id,
             ],
@@ -190,9 +190,9 @@ class TestSubprocessActionRunnerFactory(TestCase):
         autospec_method(self.factory.build_command)
         action_command = self.factory.build_stop_action_command(id, command)
         assert_equal(
-            action_command.id,
-            '%s.%s' % (id, self.factory.build_command.return_value),
+            action_command.id, f'{id}.{self.factory.build_command.return_value}'
         )
+
         assert_equal(
             action_command.command,
             self.factory.build_command.return_value,

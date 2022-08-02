@@ -100,7 +100,7 @@ def small_object():
 
 @pytest.fixture
 def large_object():
-    yield pickle.dumps([i for i in range(1000000)])
+    yield pickle.dumps(list(range(1000000)))
 
 
 @pytest.mark.usefixtures("store", "small_object", "large_object")

@@ -11,7 +11,7 @@ class Observable(object):
     """
 
     def __init__(self):
-        self._observers = dict()
+        self._observers = {}
 
     def attach(self, watch_spec, observer):
         """Attach another observer to the listen_spec.

@@ -29,10 +29,7 @@ def get_timezone(timezone_string):
       ValueError: if timezone_string is not None and the pytz module could not be
           loaded
     """
-    if timezone_string:
-        return pytz.timezone(timezone_string)
-    else:
-        return None
+    return pytz.timezone(timezone_string) if timezone_string else None
 
 
 def to_timezone(t, tzinfo):
@@ -89,11 +86,11 @@ def get_time(time_string):
 TOKEN_LAST = 'LAST'
 
 ordinal_range = range(1, 6)
-weekday_range = range(0, 7)
+weekday_range = range(7)
 month_range = range(1, 13)
 monthday_range = range(1, 32)
-hour_range = range(0, 24)
-minute_range = second_range = range(0, 60)
+hour_range = range(24)
+minute_range = second_range = range(60)
 
 
 def validate_spec(source, value_range, type, default=None, allow_last=False):
@@ -108,7 +105,7 @@ def validate_spec(source, value_range, type, default=None, allow_last=False):
             has_last = True
             continue
         if item not in value_range:
-            raise ValueError("%s not in range %s" % (type, value_range))
+            raise ValueError(f"{type} not in range {value_range}")
         source_wo_last.append(item)
 
     sorted_source = sorted(source_wo_last)

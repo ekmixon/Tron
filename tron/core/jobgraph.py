@@ -39,29 +39,28 @@ class JobGraph(object):
                 for parent_action, is_trigger in self._rev_adj_list[full_name]:
                     self._adj_list[parent_action].append(AdjListEntry(full_name, is_trigger))
 
-            cleanup_action_config = job_config.cleanup_action
-            if cleanup_action_config:
+            if cleanup_action_config := job_config.cleanup_action:
                 self._save_action(cleanup_action_config.name, job_name, cleanup_action_config)
 
         if should_validate_missing_dependency:
             missing_dependent_actions = defaultdict(list)
-            for action_name in self._rev_adj_list:
-                for dependent_action_entry in self._rev_adj_list[action_name]:
+            for action_name, value in self._rev_adj_list.items():
+                for dependent_action_entry in value:
                     if dependent_action_entry.action_name not in all_actions:
                         missing_dependent_actions[dependent_action_entry.action_name].append(action_name)
 
-            error_messages = []
-            for action_name, child_action_names in missing_dependent_actions.items():
-                error_messages.append(
-                    'Action {0} is dependency of actions:\n{1}'.format(
-                        action_name,
-                        '\n'.join(
-                            ['  - {}'.format(child_action_name) for child_action_name in child_action_names]
-                        )
-                    )
+            if error_messages := [
+                'Action {0} is dependency of actions:\n{1}'.format(
+                    action_name,
+                    '\n'.join(
+                        [
+                            f'  - {child_action_name}'
+                            for child_action_name in child_action_names
+                        ]
+                    ),
                 )
-
-            if error_messages:
+                for action_name, child_action_names in missing_dependent_actions.items()
+            ]:
                 raise ValueError(
                     (
                         'The following actions are dependencies of other actions but missing:\n'

@@ -176,7 +176,7 @@ class NodePool(object):
                 return node
 
     def __str__(self):
-        return "NodePool:%s" % self.name
+        return f"NodePool:{self.name}"
 
 
 class KnownHosts(KnownHostsFile):
@@ -184,9 +184,7 @@ class KnownHosts(KnownHostsFile):
 
     @classmethod
     def from_path(cls, file_path):
-        if not file_path:
-            return cls(None)
-        return cls.fromPath(FilePath(file_path))
+        return cls.fromPath(FilePath(file_path)) if file_path else cls(None)
 
     def get_public_key(self, hostname):
         for entry in self.iterentries():
@@ -270,13 +268,15 @@ class Node(object):
         self.disabled = True
 
     def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False
         return (
-            self.config == other.config and
-            self.conch_options == other.conch_options and
-            self.pub_key == other.pub_key and
-            self.node_settings == other.node_settings
+            (
+                self.config == other.config
+                and self.conch_options == other.conch_options
+                and self.pub_key == other.pub_key
+                and self.node_settings == other.node_settings
+            )
+            if isinstance(other, self.__class__)
+            else False
         )
 
     def __ne__(self, other):
@@ -647,11 +647,7 @@ class Node(object):
         # self.connection.transport.connectionLost(failure.Failure())
 
     def __str__(self):
-        return "Node:%s@%s:%s" % (
-            self.username or "<default>",
-            self.hostname,
-            self.config.port,
-        )
+        return f'Node:{self.username or "<default>"}@{self.hostname}:{self.config.port}'
 
     def __repr__(self):
         return self.__str__()

@@ -16,7 +16,7 @@ def assert_raises(expected_exception_class, callable_obj, *args, **kwargs):
         # we got the expected exception
         return e
     assert_not_reached(
-        "No exception was raised (expected %s)" % expected_exception_class,
+        f"No exception was raised (expected {expected_exception_class})"
     )
 
 

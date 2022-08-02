@@ -72,7 +72,7 @@ class TestActionGraph(TestCase):
         assert_equal(self.action_graph, other_graph)
 
         other_graph.required_actions = None
-        assert not self.action_graph == other_graph
+        assert self.action_graph != other_graph
 
     def test__ne__(self):
         other_graph = mock.MagicMock()

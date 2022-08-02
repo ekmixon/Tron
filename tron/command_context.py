@@ -96,20 +96,17 @@ class JobContext(object):
             last_success = self.job.runs.last_success
             last_success = last_success.run_time if last_success else None
 
-            time_value = timeutils.DateArithmetic.parse(
+            if time_value := timeutils.DateArithmetic.parse(
                 date_spec,
                 last_success,
-            )
-            if time_value:
+            ):
                 return time_value
 
         raise KeyError(item)
 
     def _get_date_spec_parts(self, name):
         parts = name.rsplit('#', 1)
-        if len(parts) != 2:
-            return name, None
-        return parts
+        return (name, None) if len(parts) != 2 else parts
 
     @property
     def namespace(self):
@@ -142,8 +139,7 @@ class JobRunContext(object):
     def __getitem__(self, name):
         """Attempt to parse date arithmetic syntax and apply to run_time."""
         run_time = self.job_run.run_time
-        time_value = timeutils.DateArithmetic.parse(name, run_time)
-        if time_value:
+        if time_value := timeutils.DateArithmetic.parse(name, run_time):
             return time_value
 
         raise KeyError(name)

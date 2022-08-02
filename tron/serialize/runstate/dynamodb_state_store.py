@@ -43,8 +43,7 @@ class DynamoDBStateStore(object):
         """
         first_items = self._get_first_partitions(keys)
         remaining_items = self._get_remaining_partitions(first_items)
-        vals = self._merge_items(first_items, remaining_items)
-        return vals
+        return self._merge_items(first_items, remaining_items)
 
     def _get_items(self, keys: list) -> object:
         items = []
@@ -96,8 +95,7 @@ class DynamoDBStateStore(object):
             item.sort(key=lambda x: int(x['index']['N']))
             for val in item:
                 raw_items[key] += bytes(val['val']['B'])
-        deserialized_items = {k: pickle.loads(v) for k, v in raw_items.items()}
-        return deserialized_items
+        return {k: pickle.loads(v) for k, v in raw_items.items()}
 
     def save(self, key_value_pairs) -> None:
         for key, val in key_value_pairs:

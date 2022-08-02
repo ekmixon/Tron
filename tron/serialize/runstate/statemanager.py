@@ -102,8 +102,7 @@ class StateSaveBuffer(object):
 
     def __iter__(self):
         """Return all buffered data and clear the buffer."""
-        for key, item in self.buffer.items():
-            yield key, item
+        yield from self.buffer.items()
         self.buffer.clear()
 
 
@@ -149,22 +148,22 @@ class PersistentStateManager(object):
             job_state['runs'] = self._restore_runs_for_job(job_name, job_state)
         frameworks = self._restore_dicts(runstate.MESOS_STATE, ['frameworks'])
 
-        state = {
+        return {
             runstate.JOB_STATE: jobs,
             runstate.MESOS_STATE: frameworks,
         }
-        return state
 
     def _restore_runs_for_job(self, job_name, job_state):
         run_nums = job_state['run_nums']
         runs = []
         for run_num in run_nums:
             key = jobrun.get_job_run_id(job_name, run_num)
-            run_state = list(self._restore_dicts(runstate.JOB_RUN_STATE, [key]).values())
-            if not run_state:
-                log.error(f'Failed to restore {key}, no state found for it')
-            else:
+            if run_state := list(
+                self._restore_dicts(runstate.JOB_RUN_STATE, [key]).values()
+            ):
                 runs.append(run_state[0])
+            else:
+                log.error(f'Failed to restore {key}, no state found for it')
         return runs
 
     def _restore_metadata(self):

@@ -89,10 +89,7 @@ class ChainedDictContextTestCase(SimpleContextTestCaseBase):
         self.next_context = command_context.CommandContext(
             dict(foo='bar', next_foo='next_bar'),
         )
-        self.context = command_context.CommandContext(
-            dict(),
-            self.next_context,
-        )
+        self.context = command_context.CommandContext({}, self.next_context)
 
     def test_chain_get(self):
         assert_equal(self.context['next_foo'], 'next_bar')

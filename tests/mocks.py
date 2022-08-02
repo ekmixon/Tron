@@ -80,29 +80,22 @@ class MockNodePool(object):
     _node = None
 
     def __init__(self, *node_names):
-        self.nodes = []
         self._ndx_cycle = None
-        for hostname in node_names:
-            self.nodes.append(MockNode(hostname=hostname))
-
+        self.nodes = [MockNode(hostname=hostname) for hostname in node_names]
         if self.nodes:
-            self._ndx_cycle = itertools.cycle(range(0, len(self.nodes)))
+            self._ndx_cycle = itertools.cycle(range(len(self.nodes)))
 
     def __getitem__(self, value):
         for node in self.nodes:
             if node.hostname == value:
                 return node
-        else:
-            raise KeyError
+        raise KeyError
 
     def next(self):
         if not self.nodes:
             self.nodes.append(MockNode())
 
-        if self._ndx_cycle:
-            return self.nodes[next(self._ndx_cycle)]
-        else:
-            return self.nodes[0]
+        return self.nodes[next(self._ndx_cycle)] if self._ndx_cycle else self.nodes[0]
 
     next_round_robin = next
 

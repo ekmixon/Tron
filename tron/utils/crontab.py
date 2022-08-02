@@ -22,7 +22,7 @@ def convert_predefined(line):
         return line
 
     if line not in PREDEFINED_SCHEDULE:
-        raise ValueError("Unknown predefine: %s" % line)
+        raise ValueError(f"Unknown predefine: {line}")
     return PREDEFINED_SCHEDULE[line]
 
 
@@ -62,10 +62,10 @@ class FieldParser(object):
         return groups
 
     def get_match_groups(self, source):
-        match = self.range_pattern.match(source)
-        if not match:
-            raise ValueError("Unknown expression: %s" % source)
-        return match.groupdict()
+        if match := self.range_pattern.match(source):
+            return match.groupdict()
+        else:
+            raise ValueError(f"Unknown expression: {source}")
 
     def get_values(self, source):
         source = self.normalize(source)
@@ -102,7 +102,7 @@ class FieldParser(object):
         min_value, max_value = self.bounds
         value = int(value)
         if not min_value <= value < max_value:
-            raise ValueError("%s value out of range: %s" % (self.name, value))
+            raise ValueError(f"{self.name} value out of range: {value}")
         return value
 
 

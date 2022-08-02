@@ -23,9 +23,7 @@ class DummyTarget(object):
         return not self.v
 
     def equals(self, b, sometimes=False):
-        if sometimes:
-            return 'sometimes'
-        return self.v == b
+        return 'sometimes' if sometimes else self.v == b
 
 
 class DummyObject(object):

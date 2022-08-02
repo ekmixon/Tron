@@ -87,7 +87,7 @@ class JobScheduler(Observer):
         pending_run_times = [j.run_time for j in list(self.job.runs.get_pending())]
         if len(pending_run_times) != 1:
             log.warning(f'{self.job} has {len(pending_run_times)} pending runs, not 1')
-        next_run_time = None if len(pending_run_times) == 0 else pending_run_times[0]
+        next_run_time = pending_run_times[0] if pending_run_times else None
 
         self.job.runs.remove_pending()
         self.create_and_schedule_runs(next_run_time=next_run_time)
@@ -191,10 +191,7 @@ class JobScheduler(Observer):
         self.run_queue_schedule()
 
     def run_queue_schedule(self):
-        # TODO: this should only start runs on the same node if this is an
-        # all_nodes job, but that is currently not possible
-        queued_run = self.job.runs.get_first_queued()
-        if queued_run:
+        if queued_run := self.job.runs.get_first_queued():
             reactor.callLater(0, self.run_job, queued_run, run_queued=True)
 
         # Attempt to schedule a new run.  This will only schedule a run if the

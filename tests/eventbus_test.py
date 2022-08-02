@@ -215,7 +215,7 @@ class EventBusTestCase(TestCase):
         self.eventbus.sync_unsubscribe(('pre', 'sub'))
         assert self.eventbus.event_subscribers == {'pre': [('sub2', 'cb2')]}
         self.eventbus.sync_unsubscribe(('pre', 'sub2'))
-        assert self.eventbus.event_subscribers == {}
+        assert not self.eventbus.event_subscribers
 
     @mock.patch('tron.eventbus.reactor', autospec=True)
     def test_sync_notify(self, reactor):

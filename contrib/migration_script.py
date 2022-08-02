@@ -50,8 +50,7 @@ def parse_args():
         '--job',
         help='Specify a single job to migrate'
     )
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 def check_job_if_running(jobs_status, job_name):
@@ -59,16 +58,31 @@ def check_job_if_running(jobs_status, job_name):
         if job_status['name'] == job_name:
             status = job_status['status']
             if status == 'running':
-                print(bcolors.FAIL + 'job {} is still running, can not migrate'.format(job_name) + bcolors.ENDC)
+                print(
+                    bcolors.FAIL
+                    + f'job {job_name} is still running, can not migrate'
+                    + bcolors.ENDC
+                )
+
                 return False
             elif status == 'disabled':
-                print(bcolors.WARNING + 'job {} is disabled, need to cancel it manually later'.format(job_name) + bcolors.ENDC)
+                print(
+                    bcolors.WARNING
+                    + f'job {job_name} is disabled, need to cancel it manually later'
+                    + bcolors.ENDC
+                )
+
                 return True
             else:
-                print(bcolors.OKGREEN + 'job {} is not running, can migrate'.format(job_name) + bcolors.ENDC)
+                print(
+                    bcolors.OKGREEN
+                    + f'job {job_name} is not running, can migrate'
+                    + bcolors.ENDC
+                )
+
                 return True
 
-    print(bcolors.FAIL + 'Can not find the job {}'.format(job_name) + bcolors.ENDC)
+    print(bcolors.FAIL + f'Can not find the job {job_name}' + bcolors.ENDC)
     return False
 
 
@@ -83,35 +97,50 @@ def command_jobs(command, jobs, args, ns=None):
     command_flag = True
     for job in jobs:
         if ns is not None:
-            job_name = ns + '.' + job['name']
+            job_name = f'{ns}.' + job['name']
         else:
-            job_name = args.old_ns + '.' + job['name']
+            job_name = f'{args.old_ns}.' + job['name']
 
         if command == 'move':
-            data = {'command': command, 'old_name': args.old_ns + '.' + job['name'], 'new_name': args.new_ns + '.' + job['name']}
+            data = {
+                'command': command,
+                'old_name': f'{args.old_ns}.' + job['name'],
+                'new_name': f'{args.new_ns}.' + job['name'],
+            }
+
             uri = urljoin(args.server, 'api/jobs')
-            job_name = args.new_ns + '.' + job['name']
+            job_name = f'{args.new_ns}.' + job['name']
         else:
             data = {'command': command}
-            uri = urljoin(args.server, 'api/jobs/' + job_name)
+            uri = urljoin(args.server, f'api/jobs/{job_name}')
 
         response = client.request(uri, data=data)
         if response.error:
-            print(bcolors.FAIL + 'Failed to {} {}'.format(command, job_name) + bcolors.ENDC)
+            print(bcolors.FAIL + f'Failed to {command} {job_name}' + bcolors.ENDC)
             command_flag = False
         else:
-            print(bcolors.OKGREEN + 'Succeed to {} {}'.format(command, job_name) + bcolors.ENDC)
+            print(bcolors.OKGREEN + f'Succeed to {command} {job_name}' + bcolors.ENDC)
     return command_flag
 
 
 def ssh_command(hostname, command):
-    print(bcolors.BOLD + 'Executing the command: ssh -A {} {}'.format(hostname, command) + bcolors.ENDC)
+    print(
+        bcolors.BOLD
+        + f'Executing the command: ssh -A {hostname} {command}'
+        + bcolors.ENDC
+    )
+
     ssh = subprocess.Popen(["ssh", "-A", hostname, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     exitcode = ssh.wait()
     result = ssh.stdout.readlines()
     error = ssh.stderr.readlines()
     if exitcode != 0:
-        print(bcolors.FAIL + 'Execute command {} failed: {}'.format(command, error) + bcolors.ENDC)
+        print(
+            bcolors.FAIL
+            + f'Execute command {command} failed: {error}'
+            + bcolors.ENDC
+        )
+
         exit(exitcode)
     return result
 
@@ -133,18 +162,21 @@ def main():
                 jobs = [job for job in jobs if job['name'] == args.job]
                 if not jobs:
                     raise ValueError(f'Invalid job specified. Options were {job_names}')
-                job_name_with_ns = args.old_ns + '.' + args.job
+                job_name_with_ns = f'{args.old_ns}.{args.job}'
                 is_migration_safe = is_migration_safe & check_job_if_running(jobs_status, job_name_with_ns)
 
             else:  # Migrate all jobs in namespace
                 for job_name in job_names:
-                    job_name_with_ns = args.old_ns + '.' + job_name
+                    job_name_with_ns = f'{args.old_ns}.{job_name}'
                     is_migration_safe = is_migration_safe & check_job_if_running(jobs_status, job_name_with_ns)
 
         if is_migration_safe is True:
-            print(bcolors.OKBLUE + "Jobs are not running." + bcolors.ENDC)
+            print(f"{bcolors.OKBLUE}Jobs are not running.{bcolors.ENDC}")
         else:
-            print(bcolors.WARNING + "Some jobs are still running, abort this migration," + bcolors.ENDC)
+            print(
+                f"{bcolors.WARNING}Some jobs are still running, abort this migration,{bcolors.ENDC}"
+            )
+
             return
 
         # try stop cron
@@ -163,11 +195,11 @@ def main():
             command_jobs('move', jobs, args)
 
             # update new namespace
-            ssh_command(hostname, "sudo paasta_setup_tron_namespace " + args.new_ns)
+            ssh_command(hostname, f"sudo paasta_setup_tron_namespace {args.new_ns}")
 
             # update old namespace if only one job is moving
             if args.job:
-                ssh_command(hostname, "sudo paasta_setup_tron_namespace " + args.old_ns)
+                ssh_command(hostname, f"sudo paasta_setup_tron_namespace {args.old_ns}")
 
         #clean up namespace
         ssh_command(hostname, "sudo paasta_cleanup_tron_namespaces")

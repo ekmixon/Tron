@@ -125,8 +125,7 @@ class TronDaemon(object):
         try:
             self.mcp.initial_setup()
         except Exception as e:
-            msg = "Error in configuration %s: %s"
-            log.exception(msg % (config_path, e))
+            log.exception(f"Error in configuration {config_path}: {e}")
             raise
 
     def _run_reactor(self):

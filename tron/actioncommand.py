@@ -183,7 +183,7 @@ class SubprocessActionRunnerFactory(object):
 
     def build_stop_action_command(self, id, command):
         command = self.build_command(id, command, self.status_exec_name)
-        run_id = '%s.%s' % (id, command)
+        run_id = f'{id}.{command}'
         return ActionCommand(run_id, command, StringBufferStore())
 
     def __eq__(self, other):

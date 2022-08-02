@@ -186,7 +186,7 @@ class OutputStreamSerializer(object):
         try:
             cmd = ('tail', '-n', str(num_lines), path)
             tail_sub = Popen(cmd, stdout=PIPE)
-            return list(line.rstrip().decode() for line in tail_sub.stdout)
+            return [line.rstrip().decode() for line in tail_sub.stdout]
         except OSError as e:
             log.error(f"Could not tail {path}: {e}")
             return []
@@ -213,8 +213,7 @@ class OutputPath(object):
 
     def __iter__(self):
         yield self.base
-        for p in self.parts:
-            yield p
+        yield from self.parts
 
     def __str__(self):
         return os.path.join(*self)
@@ -230,7 +229,7 @@ class OutputPath(object):
         try:
             shutil.rmtree(str(self))
         except OSError as e:
-            log.warning("Failed to delete %s: %s" % (self, e))
+            log.warning(f"Failed to delete {self}: {e}")
 
     def __eq__(self, other):
         return self.base == other.base and self.parts == other.parts

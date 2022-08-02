@@ -69,12 +69,12 @@ def schedule_config_from_legacy_dict(schedule, config_context):
     if 'start_time' in schedule or 'days' in schedule:
         start_time = schedule.get('start_time', '00:00:00')
         days = schedule.get('days', '')
-        scheduler_config = '%s %s' % (start_time, days)
+        scheduler_config = f'{start_time} {days}'
         config = ConfigGenericSchedule('daily', scheduler_config, None)
         return valid_daily_scheduler(config, config_context)
 
     path = config_context.path
-    raise ConfigError("Unknown scheduler at %s: %s" % (path, schedule))
+    raise ConfigError(f"Unknown scheduler at {path}: {schedule}")
 
 
 def valid_schedule(schedule, config_context):
@@ -98,15 +98,10 @@ def valid_daily_scheduler(config, config_context):
 
     def valid_day(day):
         if day not in CONVERT_DAYS_INT:
-            raise ConfigError(
-                "Unknown day %s at %s" % (
-                    day,
-                    config_context.path,
-                )
-            )
+            raise ConfigError(f"Unknown day {day} at {config_context.path}")
         return CONVERT_DAYS_INT[day]
 
-    original = "%s %s" % (time_string, days)
+    original = f"{time_string} {days}"
     weekdays = {valid_day(day) for day in days or ()}
     return ConfigDailyScheduler(
         original,
@@ -124,7 +119,7 @@ def normalize_weekdays(seq):
 
 def day_canonicalization_map():
     """Build a map of weekday synonym to int index 0-6 inclusive."""
-    canon_map = dict()
+    canon_map = {}
 
     # 7-element lists with weekday names in order
     weekday_lists = [
@@ -164,7 +159,7 @@ CONVERT_DAYS_INT = day_canonicalization_map()  # day name/abbrev => {0123456}
 
 def month_canonicalization_map():
     """Build a map of month synonym to int index 0-11 inclusive."""
-    canon_map = dict()
+    canon_map = {}
 
     # calendar stores month data with a useless element in front. cut it off.
     monthname_lists = (calendar.month_name[1:], calendar.month_abbr[1:])
@@ -211,7 +206,7 @@ def build_groc_schedule_parser_re():
 
     # every|1st|2nd|3rd (also would accept 3nd, 1rd, 4st)
     MONTH_DAYS_EXPR = r'(?P<month_days>every|((\d+(%s),?)+))?' % DATE_SUFFIXES
-    DAYS_EXPR = r'((?P<days>((%s),?)+))?' % DAY_VALUES
+    DAYS_EXPR = f'((?P<days>(({DAY_VALUES}),?)+))?'
     MONTHS_EXPR = r'((in|of)\s+(?P<months>((%s),?)+))?' % MONTH_VALUES
 
     # [at] 00:00
@@ -296,8 +291,7 @@ def valid_cron_scheduler(config, config_context):
             original=config.value, jitter=config.jitter, **crontab_kwargs
         )
     except ValueError as e:
-        msg = "Invalid cron scheduler %s: %s"
-        raise ConfigError(msg % (config_context.path, e))
+        raise ConfigError(f"Invalid cron scheduler {config_context.path}: {e}")
 
 
 schedulers = {

@@ -107,7 +107,7 @@ def valid_identity_file(file_path, config_context):
     if not os.path.exists(file_path):
         raise ConfigError("Private key file %s doesn't exist" % file_path)
 
-    public_key_path = file_path + '.pub'
+    public_key_path = f'{file_path}.pub'
     if not os.path.exists(public_key_path):
         raise ConfigError("Public key file %s doesn't exist" % public_key_path)
     return file_path
@@ -137,14 +137,13 @@ def valid_time_zone(tz, config_context):
     try:
         return pytz.timezone(tz)
     except pytz.exceptions.UnknownTimeZoneError:
-        raise ConfigError('%s is not a valid time zone' % tz)
+        raise ConfigError(f'{tz} is not a valid time zone')
 
 
 def valid_node_name(value, config_context):
     valid_identifier(value, config_context)
     if not config_context.partial and value not in config_context.nodes:
-        msg = "Unknown node name %s at %s"
-        raise ConfigError(msg % (value, config_context.path))
+        raise ConfigError(f"Unknown node name {value} at {config_context.path}")
     return value
 
 
@@ -332,10 +331,9 @@ action_context = command_context.build_filled_context(
 
 
 def valid_mesos_action(action, config_context):
-    required_keys = {'cpus', 'mem', 'docker_image'}
     if action.get('executor') == schema.ExecutorTypes.mesos.value:
-        missing_keys = required_keys - set(action.keys())
-        if missing_keys:
+        required_keys = {'cpus', 'mem', 'docker_image'}
+        if missing_keys := required_keys - set(action.keys()):
             raise ConfigError(
                 'Mesos executor for action {id} is missing these required keys: {keys}'.
                 format(
@@ -629,7 +627,7 @@ class ValidateStatePersistence(Validator):
 
         if buffer_size and buffer_size < 1:
             path = config_context.path
-            raise ConfigError("%s buffer_size must be >= 1." % path)
+            raise ConfigError(f"{path} buffer_size must be >= 1.")
 
 
 valid_state_persistence = ValidateStatePersistence()
@@ -738,9 +736,8 @@ class ValidateConfig(Validator):
         """
         all_node_names = set(config['nodes'])
         for node_pool in config['node_pools'].values():
-            invalid_names = set(node_pool.nodes) - all_node_names
-            if invalid_names:
-                msg = "NodePool %s contains other NodePools: " % node_pool.name
+            if invalid_names := set(node_pool.nodes) - all_node_names:
+                msg = f"NodePool {node_pool.name} contains other NodePools: "
                 raise ConfigError(msg + ",".join(invalid_names))
 
     def post_validation(self, config, _):

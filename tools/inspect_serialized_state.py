@@ -65,8 +65,8 @@ def format_jobs(job_states):
 
 
 def display_report(state_config, job_states):
-    print("State Config: %s" % str(state_config))
-    print("Total Jobs: %s" % len(job_states))
+    print(f"State Config: {str(state_config)}")
+    print(f"Total Jobs: {len(job_states)}")
 
     print("\n%s" % format_jobs(job_states))
 

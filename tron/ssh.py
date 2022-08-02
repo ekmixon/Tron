@@ -90,10 +90,8 @@ class ClientTransport(transport.SSHClientTransport):
         if self.expected_pub_key == keys.Key.fromString(public_key):
             return defer.succeed(2)
 
-        msg = "Public key mismatch got %s expected %s" % (
-            fingerprint,
-            self.expected_pub_key.fingerprint(),
-        )
+        msg = f"Public key mismatch got {fingerprint} expected {self.expected_pub_key.fingerprint()}"
+
         log.error(msg)
         return defer.fail(ValueError(msg))
 

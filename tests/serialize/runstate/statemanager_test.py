@@ -91,7 +91,7 @@ class TestPersistentStateManager(TestCase):
     @setup
     def setup_manager(self):
         self.store = mock.Mock()
-        self.store.build_key.side_effect = lambda t, i: '%s%s' % (t, i)
+        self.store.build_key.side_effect = lambda t, i: f'{t}{i}'
         self.buffer = StateSaveBuffer(1)
         self.manager = PersistentStateManager(self.store, self.buffer)
 
@@ -102,7 +102,7 @@ class TestPersistentStateManager(TestCase):
         names = ['namea', 'nameb']
         key_to_item_map = self.manager._keys_for_items('type', names)
 
-        keys = ['type%s' % name for name in names]
+        keys = [f'type{name}' for name in names]
         assert_equal(key_to_item_map, dict(zip(keys, names)))
 
     def test_restore(self):
@@ -193,7 +193,7 @@ class TestPersistentStateManager(TestCase):
     def test_save(self):
         name, state_data = 'name', mock.Mock()
         self.manager.save(runstate.JOB_STATE, name, state_data)
-        key = '%s%s' % (runstate.JOB_STATE, name)
+        key = f'{runstate.JOB_STATE}{name}'
         self.store.save.assert_called_with([(key, state_data)])
 
     def test_save_failed(self):
@@ -214,7 +214,7 @@ class TestPersistentStateManager(TestCase):
     def test_delete(self):
         name = 'name'
         self.manager.delete(runstate.JOB_STATE, name)
-        key = '%s%s' % (runstate.JOB_STATE, name)
+        key = f'{runstate.JOB_STATE}{name}'
         self.store.save.assert_called_with([(key, None)])
 
     def test_cleanup(self):

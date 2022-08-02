@@ -57,10 +57,10 @@ class ShelveKey(object):
 
     @property
     def key(self):
-        return "%s___%s" % (self.type, self.iden)
+        return f"{self.type}___{self.iden}"
 
     def __str__(self):
-        return "%s %s" % (self.type, self.iden)
+        return f"{self.type} {self.iden}"
 
     def __eq__(self, other):
         return self.type == other.type and self.iden == other.iden

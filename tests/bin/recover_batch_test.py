@@ -102,11 +102,7 @@ def test_run(mock_watcher, mock_get_exit_code, mock_queue, mock_reactor, existin
     mock_get_exit_code.return_value = (existing_code, '')
     mock_queue.return_value.get.return_value = (watcher_code, '')
     mock_path = mock.Mock()
-    if existing_code is not None:
-        expected = existing_code
-    else:
-        expected = watcher_code
-
+    expected = existing_code if existing_code is not None else watcher_code
     with pytest.raises(SystemExit) as e:
         recover_batch.run(mock_path)
         assert e.code == expected

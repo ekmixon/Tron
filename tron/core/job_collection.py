@@ -84,8 +84,7 @@ class JobCollection:
         return [sched.get_job_runs() for sched in self]
 
     def __iter__(self):
-        for val in self.jobs.values():
-            yield val
+        yield from self.jobs.values()
 
     def __getattr__(self, name):
         return self.proxy.perform(name)

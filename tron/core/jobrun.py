@@ -28,7 +28,7 @@ class Error(Exception):
 
 
 def get_job_run_id(job_name, run_num):
-    return '%s.%s' % (job_name, run_num)
+    return f'{job_name}.{run_num}'
 
 
 class JobRun(Observable, Observer):
@@ -153,7 +153,7 @@ class JobRun(Observable, Observer):
     def _set_action_runs(self, run_collection):
         """Store action runs and register callbacks."""
         if self._action_runs is not None:
-            raise ValueError("ActionRunCollection already set on %s" % self)
+            raise ValueError(f"ActionRunCollection already set on {self}")
 
         self._action_runs = run_collection
         for action_run in run_collection.action_runs_with_cleanup:
@@ -184,11 +184,7 @@ class JobRun(Observable, Observer):
 
     def update_action_config(self, action_graph):
         self.action_graph = action_graph
-        updated = self.action_runs.update_action_config(action_graph)
-
-        # Saving the state is only for rollback safety
-        # Remove after this change is verified and we do not use the command config state
-        if updated:
+        if updated := self.action_runs.update_action_config(action_graph):
             self.notify(self.NOTIFY_STATE_CHANGED)
 
     def seconds_until_run_time(self):
@@ -353,10 +349,7 @@ class JobRun(Observable, Observer):
             return ActionRun.WAITING
         if self.action_runs.is_scheduled:
             return ActionRun.SCHEDULED
-        if self.action_runs.is_queued:
-            return ActionRun.QUEUED
-
-        return ActionRun.UNKNOWN
+        return ActionRun.QUEUED if self.action_runs.is_queued else ActionRun.UNKNOWN
 
     def cancel(self):
         return self.action_runs.cancel()
@@ -467,9 +460,7 @@ class JobRunCollection(object):
 
     def next_run_num(self):
         """Return the next run number to use."""
-        if not self.runs:
-            return 0
-        return max(r.run_num for r in self.runs) + 1
+        return max(r.run_num for r in self.runs) + 1 if self.runs else 0
 
     def remove_old_runs(self):
         """Remove old runs to reduce the number of completed runs
@@ -502,10 +493,7 @@ class JobRunCollection(object):
         return iter(self.runs)
 
     def __str__(self):
-        return "%s[%s]" % (
-            type(self).__name__,
-            ', '.join("%s(%s)" % (r.run_num, r.state) for r in self.runs),
-        )
+        return f"""{type(self).__name__}[{', '.join(f"{r.run_num}({r.state})" for r in self.runs)}]"""
 
 
 def job_runs_from_state(

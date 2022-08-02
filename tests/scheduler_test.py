@@ -147,7 +147,7 @@ class GeneralSchedulerLongJobRunTest(GeneralSchedulerTimeTestBase):
         # they belong, and run them as fast as possible
 
         last_run = self.scheduler.next_run_time(None)
-        for i in range(10):
+        for _ in range(10):
             next_run = self.scheduler.next_run_time(last_run)
             assert_equal(next_run, last_run + datetime.timedelta(days=1))
 

@@ -1663,8 +1663,13 @@ class TestCheckPreciousJobs:
     def test_sort_runs_by_interval_day(self):
         run_buckets = check_tron_jobs.sort_runs_by_interval(self.job, 'day')
 
-        assert set(run_buckets.keys()) == \
-            set(['2018.10.10', '2018.10.11', '2018.10.12', '2018.10.13'])
+        assert set(run_buckets.keys()) == {
+            '2018.10.10',
+            '2018.10.11',
+            '2018.10.12',
+            '2018.10.13',
+        }
+
         assert len(run_buckets['2018.10.10']) == 2
         assert len(run_buckets['2018.10.11']) == 2
         assert len(run_buckets['2018.10.12']) == 1
@@ -1758,7 +1763,7 @@ class TestCheckPreciousJobs:
         assert len(results) == 1
         assert results[0]['status'] == 0
         assert results[0]['output'] == \
-            "OK: fake_job is disabled and won't be checked."
+                "OK: fake_job is disabled and won't be checked."
 
     @patch('tron.bin.check_tron_jobs.guess_realert_every', mock.Mock(return_value=1), autospec=None)
     @patch('time.time', mock.Mock(return_value=1539460800.0), autospec=None)
@@ -1794,12 +1799,13 @@ class TestCheckPreciousJobs:
             include_action_runs=True,
         )]
         assert len(results) == 4
-        assert set([res['name'] for res in results]) == set([
+        assert {res['name'] for res in results} == {
             'check_tron_job.fake_job-2018.10.10',
             'check_tron_job.fake_job-2018.10.11',
             'check_tron_job.fake_job-2018.10.12',
             'check_tron_job.fake_job-2018.10.13',
-        ])
+        }
+
         for res in results:
             assert res['check_every'] == '300s'
             assert check_tron_jobs.PRECIOUS_JOB_ATTR not in res

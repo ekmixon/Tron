@@ -37,10 +37,7 @@ def parse_args():
 def read_last_yaml_entries(filename):
     with open(filename) as f:
         lines = list(yaml.load_all(f))
-        if not lines:
-            entries = {}
-        else:
-            entries = lines[-1]
+        entries = lines[-1] if lines else {}
     return entries
 
 

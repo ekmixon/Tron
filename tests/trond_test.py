@@ -113,7 +113,7 @@ class TrondEndToEndTestCase(sandbox.SandboxTestCase):
         )
         assert_equal(other_act_run['stdout'], [stdout])
 
-        job_runs_url = client.get_url('%s.1' % echo_job_name)
+        job_runs_url = client.get_url(f'{echo_job_name}.1')
         assert_equal(
             client.job_runs(job_runs_url)['state'],
             actionrun.ActionRun.FAILED,
@@ -343,7 +343,7 @@ class JobEndToEndTestCase(sandbox.SandboxTestCase):
         job_name = 'MASTER.a_job'
         job_url = self.client.get_url(job_name)
 
-        self.sandbox.tronctl('cancel', '%s.0' % job_name)
+        self.sandbox.tronctl('cancel', f'{job_name}.0')
 
         def wait_on_cancel():
             return len(self.client.job(job_url)['runs']) == 2
@@ -474,12 +474,7 @@ class JobEndToEndTestCase(sandbox.SandboxTestCase):
         )
 
         for followup_action_run in ('following_act', 'last_act'):
-            url = self.client.get_url(
-                '%s.1.%s' % (
-                    job_name,
-                    followup_action_run,
-                )
-            )
+            url = self.client.get_url(f'{job_name}.1.{followup_action_run}')
             assert_equal(
                 self.client.action_runs(url)['state'],
                 actionrun.ActionRun.QUEUED,

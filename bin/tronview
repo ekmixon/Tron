@@ -75,14 +75,15 @@ def parse_cli():
     ).completer = cmd_utils.tron_jobs_completer
 
     argcomplete.autocomplete(parser)
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 def console_height():
-    if not sys.stdout.isatty():
-        return 40
-    return int(os.popen('stty size', 'r').read().split()[0])
+    return (
+        int(os.popen('stty size', 'r').read().split()[0])
+        if sys.stdout.isatty()
+        else 40
+    )
 
 
 def view_all(args, client):
@@ -162,13 +163,14 @@ def main():
                     print(evt)
                 sys.exit(ExitCode.success)
 
-        if not args.name:
-            output = view_all(args, client)
-        else:
-            output = get_view_output(args.name, args, client)
+        output = (
+            get_view_output(args.name, args, client)
+            if args.name
+            else view_all(args, client)
+        )
 
         if not output:
-            print("Unrecognized identifier: %s" % args.name, file=sys.stderr)
+            print(f"Unrecognized identifier: {args.name}", file=sys.stderr)
             sys.exit(ExitCode.fail)
 
         if sys.stdout.isatty() and len(output.split('\n')) > console_height():

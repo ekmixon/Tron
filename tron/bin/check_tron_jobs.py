@@ -57,8 +57,7 @@ def parse_cli():
         dest="run_interval",
         default=300,
     )
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 def _timestamp_to_timeobj(timestamp):
@@ -223,18 +222,22 @@ def get_relevant_run_and_state(job_content):
 
 
 def is_action_failed_or_unknown(job_run):
-    for run in job_run.get('runs', []):
-        if run.get('state', None) in ["failed", "unknown"]:
-            return State(run.get('state'))
-    return State.SUCCEEDED
+    return next(
+        (
+            State(run.get('state'))
+            for run in job_run.get('runs', [])
+            if run.get('state', None) in ["failed", "unknown"]
+        ),
+        State.SUCCEEDED,
+    )
 
 
 def is_job_stuck(
     job_runs, job_expected_runtime, actions_expected_runtime, allow_overlap, queueing
 ):
     next_run_time = None
+    states_to_check = {"running", "waiting"}
     for job_run in job_runs:
-        states_to_check = {"running", "waiting"}
         if job_run.get('state', 'unknown') in states_to_check:
             if is_job_run_exceeding_expected_runtime(
                 job_run, job_expected_runtime
@@ -310,7 +313,7 @@ def guess_realert_every(job):
             run.get('start_time') or run.get('run_time') for run in job_runs
             if run.get('start_time') or run.get('run_time') and run.get('run_time') != job_next_run
         ]
-        if len(job_runs_started) == 0:
+        if not job_runs_started:
             return -1
         job_previous_run = max(
             job_runs_started
@@ -330,10 +333,11 @@ def get_earliest_run_time_to_check(job_content, interval):
     if not job_content['runs']:
         return None
 
-    earliest_run_time = min([
+    earliest_run_time = min(
         time.mktime(_timestamp_to_timeobj(run['run_time']))
         for run in job_content['runs']
-    ])
+    )
+
     return max(
         earliest_run_time,
         time.time() - datetime.timedelta(**{f'{interval}s': NUM_PRECIOUS - 1}).total_seconds()

@@ -27,7 +27,7 @@ class MockReactorTestCase(TestCase):
 
     @class_setup
     def class_setup_patched_reactor(self):
-        msg = "%s must set a module_to_mock field" % self.__class__
+        msg = f"{self.__class__} must set a module_to_mock field"
         assert self.module_to_mock, msg
         self.old_reactor = getattr(self.module_to_mock, 'reactor')
 
@@ -48,7 +48,7 @@ class MockTimeTestCase(TestCase):
 
     @setup
     def setup_current_time(self):
-        assert self.now, "%s must set a now field" % self.__class__
+        assert self.now, f"{self.__class__} must set a now field"
         self.old_current_time = timeutils.current_time
         timeutils.current_time = lambda tz=None: self.now
 

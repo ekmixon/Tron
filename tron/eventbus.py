@@ -236,11 +236,9 @@ class EventBus:
             log.debug(f"can't unsubscribe, not found for prefix {prefix}")
             return
 
-        new_subs = [
-            sub_cb for sub_cb in self.event_subscribers[prefix]
-            if sub_cb[0] != sub
-        ]
-        if new_subs:
+        if new_subs := [
+            sub_cb for sub_cb in self.event_subscribers[prefix] if sub_cb[0] != sub
+        ]:
             self.event_subscribers[prefix] = new_subs
         else:
             del self.event_subscribers[prefix]

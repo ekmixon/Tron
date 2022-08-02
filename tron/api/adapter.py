@@ -35,7 +35,7 @@ class ReprAdapter(object):
 
     def _get_translation_mapping(self):
         return {
-            field_name: getattr(self, 'get_%s' % field_name)
+            field_name: getattr(self, f'get_{field_name}')
             for field_name in self.translated_field_names
         }
 
@@ -45,7 +45,7 @@ class ReprAdapter(object):
             field: func()
             for field, func in self.translators.items()
         }
-        repr_data.update(translated)
+        repr_data |= translated
         return repr_data
 
 
@@ -64,9 +64,7 @@ def toggle_flag(flag_name):
     def wrap(f):
         @functools.wraps(f)
         def wrapper(self, *args, **kwargs):
-            if getattr(self, flag_name):
-                return f(self, *args, **kwargs)
-            return None
+            return f(self, *args, **kwargs) if getattr(self, flag_name) else None
 
         return wrapper
 
@@ -304,7 +302,7 @@ class JobRunAdapter(RunAdapter):
         self.include_action_graph = include_action_graph
 
     def get_url(self):
-        return '/jobs/%s/%s' % (self._obj.job_name, self._obj.run_num)
+        return f'/jobs/{self._obj.job_name}/{self._obj.run_num}'
 
     @toggle_flag('include_action_runs')
     def get_runs(self):
@@ -375,7 +373,7 @@ class JobAdapter(ReprAdapter):
         return next_run.run_time if next_run else None
 
     def get_url(self):
-        return '/jobs/{}'.format(quote(self._obj.get_name()))
+        return f'/jobs/{quote(self._obj.get_name())}'
 
     @toggle_flag('include_job_runs')
     def get_runs(self):
@@ -412,9 +410,11 @@ class JobIndexAdapter(ReprAdapter):
             return {'name': run.action_name, 'command': run.command_config.command}
 
         job_run = self._obj.get_runs().get_newest()
-        if not job_run:
-            return []
-        return [adapt_run(action_run) for action_run in job_run.action_runs]
+        return (
+            [adapt_run(action_run) for action_run in job_run.action_runs]
+            if job_run
+            else []
+        )
 
 
 class SchedulerAdapter(ReprAdapter):

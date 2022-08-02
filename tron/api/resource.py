@@ -205,8 +205,7 @@ class JobResource(resource.Resource):
             return self
 
         run_id = maybe_decode(run_id)
-        run = self.get_run_from_identifier(run_id)
-        if run:
+        if run := self.get_run_from_identifier(run_id):
             return JobRunResource(run, self.job_scheduler)
 
         job = self.job_scheduler.get_job()
@@ -392,10 +391,8 @@ class ConfigResource(resource.Resource):
             fn = self.controller.update_config
             req = "reconfigure"
 
-        log.info("Handling %s request: %s, %s" % (req, name, config_hash))
-        error = fn(name, config_content, config_hash)
-
-        if error:
+        log.info(f"Handling {req} request: {name}, {config_hash}")
+        if error := fn(name, config_content, config_hash):
             response['error'] = error
         return respond(request=request, response=response)
 
@@ -493,7 +490,7 @@ class RootResource(resource.Resource):
         self.putChild(b'api', ApiRootResource(self.mcp))
         self.putChild(b'web', static.File(web_path))
         # Temporarily hard-coded while we build the new UI
-        self.putChild(b'web2', static.File(web_path + '2/build'))
+        self.putChild(b'web2', static.File(f'{web_path}2/build'))
         self.putChild(b'', self)
 
     def render_GET(self, request):
@@ -502,7 +499,7 @@ class RootResource(resource.Resource):
         return server.NOT_DONE_YET
 
     def __str__(self):
-        return "%s(%s, %s)" % (type(self).__name__, self.mcp, self.web_path)
+        return f"{type(self).__name__}({self.mcp}, {self.web_path})"
 
 
 class LogAdapter(object):
@@ -541,4 +538,4 @@ class TronSite(server.Site):
             meter('tron.site.5xx')
 
     def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__, self.resource)
+        return f'{self.__class__.__name__}({self.resource})'

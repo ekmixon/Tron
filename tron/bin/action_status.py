@@ -23,13 +23,11 @@ def print_status_file(status_file):
 
 
 def send_signal(signal_num, status_file):
-    pid = get_field('pid', status_file)
-    if pid:
+    if pid := get_field('pid', status_file):
         try:
             os.killpg(os.getpgid(pid), signal_num)
         except OSError as e:
-            msg = "Failed to signal %s with %s: %s"
-            raise SystemExit(msg % (pid, signal_num, e))
+            raise SystemExit(f"Failed to signal {pid} with {signal_num}: {e}")
 
 
 commands = {

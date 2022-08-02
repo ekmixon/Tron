@@ -83,9 +83,7 @@ def get_jitter(time_delta):
 
 
 def get_jitter_str(time_delta):
-    if not time_delta:
-        return ''
-    return ' (+/- %s)' % time_delta
+    return f' (+/- {time_delta})' if time_delta else ''
 
 
 class GeneralScheduler(object):
@@ -152,11 +150,7 @@ class GeneralScheduler(object):
         return self.time_spec.get_match(start_time) + get_jitter(self.jitter)
 
     def __str__(self):
-        return '%s %s%s' % (
-            self.name,
-            self.original,
-            get_jitter_str(self.jitter),
-        )
+        return f'{self.name} {self.original}{get_jitter_str(self.jitter)}'
 
     def __eq__(self, other):
         return hasattr(

@@ -67,7 +67,7 @@ def duration(start_time, end_time=None):
     """
     if not start_time:
         return None
-    last_time = end_time if end_time else current_time()
+    last_time = end_time or current_time()
     return last_time - start_time
 
 
@@ -107,7 +107,7 @@ class DateArithmetic(object):
 
         if attr in ('shortdate', 'year', 'month', 'day', 'hour'):
             if delta:
-                kwargs = {'days' if attr == 'shortdate' else attr + 's': delta}
+                kwargs = {'days' if attr == 'shortdate' else f'{attr}s': delta}
                 dt += macro_timedelta(dt, **kwargs)
             return dt.strftime(cls.DATE_FORMATS[attr])
 

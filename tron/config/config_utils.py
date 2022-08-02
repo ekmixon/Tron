@@ -18,13 +18,12 @@ class StringFormatter(Formatter):
         self.context = context
 
     def get_value(self, key, args, kwds):
-        if isinstance(key, str):
-            try:
-                return kwds[key]
-            except KeyError:
-                return self.context[key]
-        else:
+        if not isinstance(key, str):
             return Formatter.get_value(key, args, kwds)
+        try:
+            return kwds[key]
+        except KeyError:
+            return self.context[key]
 
 
 class UniqueNameDict(dict):
@@ -78,10 +77,10 @@ def valid_number(type_func, value, config_context):
         value = type_func(value)
     except TypeError:
         name = type_func.__name__
-        raise ConfigError('Value at %s is not an %s: %s' % (path, name, value))
+        raise ConfigError(f'Value at {path} is not an {name}: {value}')
 
     if value < 0:
-        raise ConfigError('%s must be a positive int.' % path)
+        raise ConfigError(f'{path} must be a positive int.')
 
     return value
 
@@ -139,8 +138,7 @@ def valid_time(value, config_context):
             return datetime.datetime.strptime(value, format)
         except ValueError:
             pass
-    msg = 'Value at %s is not a valid time'
-    raise ConfigError(msg % config_context.path)
+    raise ConfigError(f'Value at {config_context.path} is not a valid time')
 
 
 # Translations from possible configuration units to the argument to
@@ -178,7 +176,7 @@ def valid_name_identifier(value, config_context):
     valid_identifier(value, config_context)
     if config_context.partial:
         return value
-    return '%s.%s' % (config_context.namespace, value)
+    return f'{config_context.namespace}.{value}'
 
 
 def build_list_of_type_validator(item_validator, allow_empty=False):
@@ -233,7 +231,7 @@ class ConfigContext(object):
 
     def build_child_context(self, path):
         """Construct a new ConfigContext based on this one."""
-        path = '%s.%s' % (self.path, path)
+        path = f'{self.path}.{path}'
         args = path, self.nodes, self.command_context, self.namespace
         return ConfigContext(*args)
 
@@ -251,7 +249,7 @@ class PartialConfigContext(object):
         self.namespace = namespace
 
     def build_child_context(self, path):
-        path = '%s.%s' % (self.path, path)
+        path = f'{self.path}.{path}'
         return PartialConfigContext(path, self.namespace)
 
 
@@ -282,10 +280,9 @@ class Validator(object):
             return None
 
         if in_dict is None:
-            raise ConfigError("A %s is required." % self.type_name)
+            raise ConfigError(f"A {self.type_name} is required.")
 
-        shortcut_value = self.do_shortcut(in_dict)
-        if shortcut_value:
+        if shortcut_value := self.do_shortcut(in_dict):
             return shortcut_value
 
         config_context = self.build_context(in_dict, config_context)
@@ -359,7 +356,7 @@ class Validator(object):
             output_dict.setdefault(key, value)
 
     def path_name(self, name=None):
-        return '%s.%s' % (self.type_name, name) if name else self.type_name
+        return f'{self.type_name}.{name}' if name else self.type_name
 
     def post_validation(self, valid_input, config_context):
         """Hook to perform additional validation steps after key validation

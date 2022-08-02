@@ -84,8 +84,7 @@ class ActionRunController(object):
                 msg = msg + "\n" + extra_msg
             return msg % (command, self.action_run)
         except NotImplementedError as e:
-            msg = "Failed to %s: %s"
-            return msg % (command, e)
+            return f"Failed to {command}: {e}"
 
     def handle_retry(self, original_command):
         cleanup_run = self.job_run.action_runs.cleanup_action_run
@@ -93,9 +92,9 @@ class ActionRunController(object):
             return "JobRun has run a cleanup action, use rerun instead"
 
         if self.action_run.retry(original_command=original_command):
-            return "Retrying %s" % self.action_run
+            return f"Retrying {self.action_run}"
         else:
-            return "Failed to schedule retry for %s" % self.action_run
+            return f"Failed to schedule retry for {self.action_run}"
 
 
 class JobRunController(object):
@@ -107,16 +106,13 @@ class JobRunController(object):
         self.job_scheduler = job_scheduler
 
     def handle_command(self, command):
-        if command == 'restart' or command == 'rerun':
+        if command in ['restart', 'rerun']:
             runs = self.job_scheduler.manual_start(self.job_run.run_time)
-            return "Created %s" % ",".join(str(run) for run in runs)
+            return f'Created {",".join((str(run) for run in runs))}'
 
         if command in self.mapped_commands:
             if getattr(self.job_run, command)():
-                return "%s now in state %s" % (
-                    self.job_run,
-                    self.job_run.state,
-                )
+                return f"{self.job_run} now in state {self.job_run.state}"
 
             msg = "Failed to %s, %s in state %s"
             return msg % (command, self.job_run, self.job_run.state)
@@ -134,15 +130,15 @@ class JobController(object):
     def handle_command(self, command, run_time=None):
         if command == 'enable':
             self.job_scheduler.enable()
-            return "%s is enabled" % self.job_scheduler.get_job()
+            return f"{self.job_scheduler.get_job()} is enabled"
 
         elif command == 'disable':
             self.job_scheduler.disable()
-            return "%s is disabled" % self.job_scheduler.get_job()
+            return f"{self.job_scheduler.get_job()} is disabled"
 
         elif command == 'start':
             runs = self.job_scheduler.manual_start(run_time=run_time)
-            return "Created %s" % ",".join(str(run) for run in runs)
+            return f'Created {",".join((str(run) for run in runs))}'
 
         if command == "retry":
             raise UnknownCommandError("Error: A whole Job cannot be retried, only individual actions for a specific job run id can.")
@@ -182,7 +178,7 @@ class ConfigController(object):
             content = yaml.load(content)
             self.config_manager.validate_with_fragment(name, content)
         except Exception as e:
-            return "Configuration update will fail: %s" % str(e)
+            return f"Configuration update will fail: {str(e)}"
 
     def update_config(self, name, content, config_hash):
         """Update a configuration fragment and reload the MCP."""
@@ -201,7 +197,7 @@ class ConfigController(object):
                 self.config_manager.write_config(name, old_config)
                 self.mcp.reconfigure(namespace=name)
             except Exception as e:
-                log.error("Could not restore old config: %s" % e)
+                log.error(f"Could not restore old config: {e}")
                 return str(e)
             return str(e)
 
@@ -218,7 +214,7 @@ class ConfigController(object):
             self.config_manager.delete_config(name)
             self.mcp.reconfigure(namespace=name)
         except Exception as e:
-            log.error("Deleting configuration for %s failed: %s" % (name, e))
+            log.error(f"Deleting configuration for {name} failed: {e}")
             return str(e)
 
     def get_namespaces(self):
@@ -256,7 +252,8 @@ class EventsController:
         return dict(response='OK')
 
     def info(self):
-        if not EventBus.instance:
-            return dict(error='EventBus disabled')
-
-        return dict(response=EventBus.instance.event_log)
+        return (
+            dict(response=EventBus.instance.event_log)
+            if EventBus.instance
+            else dict(error='EventBus disabled')
+        )

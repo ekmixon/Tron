@@ -25,10 +25,13 @@ def get_last_run_time(job):
     timestamps = []
     job_runs = job['runs']
     for run in job_runs:
-        for action in run['runs']:
-            if action.get('start_time') and action.get('state') != 'scheduled':
-                timestamps.append(action.get('start_time'))
-    return max(timestamps) if timestamps else None
+        timestamps.extend(
+            action.get('start_time')
+            for action in run['runs']
+            if action.get('start_time') and action.get('state') != 'scheduled'
+        )
+
+    return max(timestamps, default=None)
 
 
 def parse_cli():

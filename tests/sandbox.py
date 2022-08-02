@@ -41,7 +41,7 @@ def wait_on_sandbox(func, delay=0.1, max_wait=5.0):
         time.sleep(delay)
         if func():
             return
-    raise TronSandboxException("Failed %s" % func.__name__)
+    raise TronSandboxException(f"Failed {func.__name__}")
 
 
 def wait_on_state(client_func, url, state, field='state'):
@@ -50,7 +50,7 @@ def wait_on_state(client_func, url, state, field='state'):
     def wait_func():
         return client_func(url)[field] == state
 
-    wait_func.__name__ = '%s wait on %s' % (url, state)
+    wait_func.__name__ = f'{url} wait on {state}'
     wait_on_sandbox(wait_func)
 
 
@@ -61,7 +61,7 @@ def wait_on_proc_terminate(pid):
         except Exception:
             return True
 
-    wait_on_terminate.__name__ = "Wait on %s to terminate" % pid
+    wait_on_terminate.__name__ = f"Wait on {pid} to terminate"
     wait_on_sandbox(wait_on_terminate)
 
 
@@ -146,26 +146,19 @@ class ClientProxy(object):
             try:
                 return func(*args, **kwargs)
             except (client.RequestError, ValueError) as e:
-                # ValueError for JSONDecode errors
-                log_contents = self.log_contents()
-                if log_contents:
+                if log_contents := self.log_contents():
                     log.warn("%r, Log:\n%s" % (e, log_contents))
                 return False
 
     def __getattr__(self, name):
         attr = getattr(self.client, name)
-        if not callable(attr):
-            return attr
-
-        return functools.partial(self.wrap, attr)
+        return functools.partial(self.wrap, attr) if callable(attr) else attr
 
 
 def verify_environment():
     for env_var in ['SSH_AUTH_SOCK', 'PYTHONPATH']:
         if not os.environ.get(env_var):
-            raise TronSandboxException(
-                "Missing $%s in test environment." % env_var,
-            )
+            raise TronSandboxException(f"Missing ${env_var} in test environment.")
 
 
 class TronSandbox(object):
@@ -183,7 +176,7 @@ class TronSandbox(object):
         self.config_path = self.abs_path('configs/')
         self.port = find_unused_port()
         self.host = 'localhost'
-        self.api_uri = 'http://%s:%s' % (self.host, self.port)
+        self.api_uri = f'http://{self.host}:{self.port}'
         cclient = client.Client(self.api_uri)
         self.client = ClientProxy(cclient, self.log_file)
         self.setup_logging_conf()
@@ -235,13 +228,14 @@ class TronSandbox(object):
     def trond(self, *args):
         args = list(args) if args else []
         args += [
-            '--working-dir=%s' % self.tmp_dir,
-            '--pid-file=%s' % self.pid_file,
+            f'--working-dir={self.tmp_dir}',
+            f'--pid-file={self.pid_file}',
             '--port=%d' % self.port,
-            '--host=%s' % self.host,
-            '--config-path=%s' % self.config_path,
-            '--log-conf=%s' % self.log_conf,
+            f'--host={self.host}',
+            f'--config-path={self.config_path}',
+            f'--log-conf={self.log_conf}',
         ]
+
 
         self.run_command('trond', args)
         wait_on_sandbox(lambda: bool(self.client.home()))
@@ -262,6 +256,5 @@ class TronSandbox(object):
             return int(f.read())
 
     def shutdown_trond(self, sig_num=signal.SIGTERM):
-        trond_pid = self.get_trond_pid()
-        if trond_pid:
+        if trond_pid := self.get_trond_pid():
             os.kill(trond_pid, sig_num)

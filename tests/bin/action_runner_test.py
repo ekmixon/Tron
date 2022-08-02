@@ -48,9 +48,9 @@ class TestRegister(TestCase):
     @setup_teardown
     def patch_sys(self):
         with mock.patch('tron.bin.action_runner.os.path.isdir', autospec=True) as self.mock_isdir, \
-                mock.patch('tron.bin.action_runner.os.makedirs', autospec=True) as self.mock_makedirs, \
-                mock.patch('tron.bin.action_runner.os.access', autospec=True) as self.mock_access, \
-                mock.patch('tron.bin.action_runner.StatusFile', autospec=True) as self.mock_status_file:
+                    mock.patch('tron.bin.action_runner.os.makedirs', autospec=True) as self.mock_makedirs, \
+                    mock.patch('tron.bin.action_runner.os.access', autospec=True) as self.mock_access, \
+                    mock.patch('tron.bin.action_runner.StatusFile', autospec=True) as self.mock_status_file:
             self.output_path = '/bogus/path/does/not/exist'
             self.command = 'command'
             self.run_id = 'Job.test.1'
@@ -87,8 +87,9 @@ class TestRegister(TestCase):
             self.proc,
         )
         self.mock_status_file.assert_called_with(
-            self.output_path + '/' + action_runner.STATUS_FILE,
+            f'{self.output_path}/{action_runner.STATUS_FILE}'
         )
+
         self.mock_status_file.return_value.wrap.assert_called_with(
             command=self.command,
             run_id=self.run_id,

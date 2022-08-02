@@ -479,7 +479,7 @@ class TestJobRunCollection(TestCase):
             node_pool,
         )
         assert len(runs) == 4
-        assert all([type(job) == jobrun.JobRun for job in runs])
+        assert all(type(job) == jobrun.JobRun for job in runs)
 
     def test_build_new_run(self):
         autospec_method(self.run_collection.remove_old_runs)
@@ -715,14 +715,13 @@ class TestJobRunStateTransitions:
             action_graph=action_graph,
             action_runner=actioncommand.NoActionRunnerFactory(),
         )
-        job_run = jobrun.JobRun.for_job(
+        return jobrun.JobRun.for_job(
             mock_job,
             run_num=1,
             run_time=datetime.datetime.now(),
             node=mock.Mock(),
             manual=False,
         )
-        return job_run
 
     def test_success_path(self, job_run):
         # Check expected states as actions run normally and succeed.

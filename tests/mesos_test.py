@@ -133,10 +133,14 @@ class TestMesosTask(TestCase):
             yield
 
     def test_aws_credentials_redacted(self):
-        assert all(['THISISASECRET' not in text[0][0] for text in self.task.log.info.call_args_list])
-        assert all(['foo' in text[0][0] for text in self.task.log.info.call_args_list])
-        assert all(['bar' in text[0][0] for text in self.task.log.info.call_args_list])
-        assert all(['baz' in text[0][0] for text in self.task.log.info.call_args_list])
+        assert all(
+            'THISISASECRET' not in text[0][0]
+            for text in self.task.log.info.call_args_list
+        )
+
+        assert all('foo' in text[0][0] for text in self.task.log.info.call_args_list)
+        assert all('bar' in text[0][0] for text in self.task.log.info.call_args_list)
+        assert all('baz' in text[0][0] for text in self.task.log.info.call_args_list)
 
     def test_handle_staging(self):
         event = mock_task_event(
@@ -393,7 +397,7 @@ class TestMesosCluster(TestCase):
         cluster.set_enabled(False)
         assert not cluster.enabled
         assert cluster.runner.stop.call_count == 1
-        assert cluster.tasks == {}
+        assert not cluster.tasks
         assert mock_task.exited.call_count == 1
 
     def test_set_enabled_on(self):

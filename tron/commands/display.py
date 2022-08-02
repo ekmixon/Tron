@@ -49,11 +49,7 @@ class Color(object):
     def set(cls, color_name, text):
         if not cls.enabled or not color_name:
             return text
-        return "{}{}{}".format(
-            cls.colors[color_name.lower()],
-            text,
-            cls.colors['end'],
-        )
+        return f"{cls.colors[color_name.lower()]}{text}{cls.colors['end']}"
 
     @classmethod
     def toggle(cls, enable):
@@ -136,7 +132,7 @@ class TableDisplay(object):
         length = self.get_field_width(field_idx)
         value = self.format_value(field_idx, value)
         if len(value) > length:
-            return (value[:length - 3] + '...').ljust(length)
+            return f'{value[:length - 3]}...'.ljust(length)
         return value.ljust(length)
 
     def format_value(self, field_idx, value):
@@ -277,7 +273,7 @@ class DisplayJobRuns(TableDisplay):
 
     def format_value(self, field_idx, value):
         if self.fields[field_idx] == 'run_num':
-            value = '.' + str(value)
+            value = f'.{str(value)}'
 
         if self.fields[field_idx] == 'scheduled_time':
             value = value or '-'
@@ -295,12 +291,7 @@ class DisplayJobRuns(TableDisplay):
         end = row['end_time'] or "-"
         duration = row['duration'][:-7] if row['duration'] else "-"
 
-        row_data = "%sStart: %s  End: %s  (%s)" % (
-            ' ' * self.widths[0],
-            start,
-            end,
-            duration,
-        )
+        row_data = f"{' ' * self.widths[0]}Start: {start}  End: {end}  ({duration})"
         self.out.append(Color.set('gray', row_data))
 
 
@@ -402,27 +393,28 @@ class DisplayActionRuns(TableDisplay):
 
 
 def display_node(source, _=None):
-    if not source:
-        return ''
-    return '%s@%s' % (source['username'], source['hostname'])
+    return f"{source['username']}@{source['hostname']}" if source else ''
 
 
 def display_node_pool(source, _=None):
-    if not source:
-        return ''
-    return "%s (%d node(s))" % (source['name'], len(source['nodes']))
+    return (
+        "%s (%d node(s))" % (source['name'], len(source['nodes']))
+        if source
+        else ''
+    )
 
 
 def display_scheduler(source, _=None):
-    if not source:
-        return ''
-    return "%s %s%s" % (source['type'], source['value'], source['jitter'])
+    return (
+        f"{source['type']} {source['value']}{source['jitter']}"
+        if source
+        else ''
+    )
 
 
 def display_state_delayed(_, obj):
     state = obj['state']
-    in_delay = obj['in_delay']
-    if in_delay:
+    if in_delay := obj['in_delay']:
         return f"{state} (retry delayed for {int(in_delay)}s)"
     else:
         return state

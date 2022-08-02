@@ -27,8 +27,7 @@ def parse_cli():
         default=False,
         help="Don't actually send metrics out. Defaults: %(default)s"
     )
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 def check_bin_exists(bin):

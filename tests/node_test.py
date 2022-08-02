@@ -239,7 +239,7 @@ class TestNode(TestCase):
 class TestNodePool(TestCase):
     @setup
     def setup_nodes(self):
-        self.nodes = [build_node(name='node%s' % i) for i in range(5)]
+        self.nodes = [build_node(name=f'node{i}') for i in range(5)]
         self.node_pool = node.NodePool(self.nodes, 'thename')
 
     def test_from_config(self):

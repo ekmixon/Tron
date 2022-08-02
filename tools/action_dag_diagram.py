@@ -40,21 +40,23 @@ def build_diagram(job_config):
     edges, nodes = [], []
 
     for action in job_config.actions.values():
-        shape = 'invhouse' if not action.requires else 'rect'
-        nodes.append("node [shape = %s]; %s" % (shape, action.name))
-        for required_action in action.requires:
-            edges.append("%s -> %s" % (required_action, action.name))
+        shape = 'rect' if action.requires else 'invhouse'
+        nodes.append(f"node [shape = {shape}]; {action.name}")
+        edges.extend(
+            f"{required_action} -> {action.name}"
+            for required_action in action.requires
+        )
 
     return "digraph g{%s\n%s}" % ('\n'.join(nodes), '\n'.join(edges))
 
 
 def get_job(config_container, namespace, job_name):
     if namespace not in config_container:
-        raise ValueError("Unknown namespace: %s" % namespace)
+        raise ValueError(f"Unknown namespace: {namespace}")
 
     config = config_container[opts.namespace]
     if job_name not in config.jobs:
-        raise ValueError("Could not find Job %s" % job_name)
+        raise ValueError(f"Could not find Job {job_name}")
 
     return config.jobs[job_name]
 
@@ -67,5 +69,5 @@ if __name__ == '__main__':
     job_config = get_job(container, opts.namespace, opts.name)
     graph = build_diagram(job_config)
 
-    with open('%s.dot' % opts.name, 'w') as fh:
+    with open(f'{opts.name}.dot', 'w') as fh:
         fh.write(graph)

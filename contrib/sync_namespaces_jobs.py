@@ -32,14 +32,13 @@ def parse_args():
         default='/tmp/tron-servdir',
         help='Directory to put Tron configuration files for load testing',
     )
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 def main():
     args = parse_args()
     for filename in os.listdir(args.src):
-        print('filename = {}'.format(filename))
+        print(f'filename = {filename}')
         filepath = os.path.join(args.src, filename)
         if os.path.isfile(filepath) and filepath.endswith(".yaml"):
             with open(filepath, "r") as f:
@@ -61,9 +60,7 @@ def main():
                         if "node" in action:
                             action['node'] = "localhost"
             for i in range(args.multiple):
-                out_filepath = os.path.join(
-                    args.dest, 'load_testing_' + str(i) + '-' + filename
-                )
+                out_filepath = os.path.join(args.dest, f'load_testing_{str(i)}-{filename}')
                 with open(out_filepath, 'w') as outf:
                     yaml.dump(config, outf, default_flow_style=False)
 

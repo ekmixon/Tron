@@ -36,9 +36,9 @@ def parse_options():
 def main(source, dest):
     dest = os.path.abspath(dest)
     if not os.path.isfile(source):
-        raise SystemExit("Error: Source (%s) is not a file" % source)
+        raise SystemExit(f"Error: Source ({source}) is not a file")
     if os.path.exists(dest):
-        raise SystemExit("Error: Destination path (%s) already exists" % dest)
+        raise SystemExit(f"Error: Destination path ({dest}) already exists")
     old_config = manager.read_raw(source)
     manager.create_new_config(dest, old_config)
 
